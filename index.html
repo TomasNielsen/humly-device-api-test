@@ -374,9 +374,7 @@
 
         // Reboot
         function rebootDevice() {
-            if (confirm('Are you sure you want to reboot the device?')) {
-                apiPost('/api/reboot', 'rebootResponse');
-            }
+            apiPost('/api/reboot', 'rebootResponse');
         }
 
         // Backlight

@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Humly Device API Test</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            padding: 10px;
+            background: #ecf0f1;
+            border-radius: 5px;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        label {
+            font-weight: 500;
+            min-width: 100px;
+        }
+        input[type="text"], input[type="number"], select {
+            padding: 10px 15px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            min-width: 250px;
+        }
+        input[type="range"] {
+            width: 200px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button.primary {
+            background: #3498db;
+            color: white;
+        }
+        button.primary:hover {
+            background: #2980b9;
+        }
+        button.success {
+            background: #27ae60;
+            color: white;
+        }
+        button.success:hover {
+            background: #219a52;
+        }
+        button.danger {
+            background: #e74c3c;
+            color: white;
+        }
+        button.danger:hover {
+            background: #c0392b;
+        }
+        button.warning {
+            background: #f39c12;
+            color: white;
+        }
+        button.warning:hover {
+            background: #d68910;
+        }
+        .response {
+            background: #2c3e50;
+            color: #2ecc71;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin-top: 10px;
+            min-height: 50px;
+        }
+        .color-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: border-color 0.2s;
+        }
+        .color-option:hover, .color-option.selected {
+            border-color: #333;
+        }
+        .radio-group {
+            display: flex;
+            gap: 15px;
+        }
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            min-width: auto;
+            cursor: pointer;
+        }
+        .endpoint-info {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        .new-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        #clock {
+            text-align: right;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .slider-value {
+            font-weight: bold;
+            min-width: 40px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Humly Device API Test</h1>
+    <div id="clock"></div>
+
+    <!-- Configuration -->
+    <div class="section">
+        <h2>Configuration</h2>
+        <div class="form-row">
+            <label>API Endpoint:</label>
+            <input type="text" id="apiEndpoint" value="http://127.0.0.1:3000" placeholder="http://127.0.0.1:3000">
+        </div>
+    </div>
+
+    <!-- Serial -->
+    <div class="section">
+        <h2>Serial Number <span class="new-badge">NEW</span></h2>
+        <p class="endpoint-info">GET /api/serial - Read device serial numbers</p>
+        <div class="form-row">
+            <button class="primary" onclick="getSerial()">Get Serial Numbers</button>
+        </div>
+        <div class="response" id="serialResponse">Response will appear here...</div>
+    </div>
+
+    <!-- Reboot -->
+    <div class="section">
+        <h2>Reboot <span class="new-badge">NEW</span></h2>
+        <p class="endpoint-info">POST /api/reboot - Reboot the device</p>
+        <div class="form-row">
+            <button class="danger" onclick="rebootDevice()">Reboot Device</button>
+        </div>
+        <div class="response" id="rebootResponse">Response will appear here...</div>
+    </div>
+
+    <!-- Backlight -->
+    <div class="section">
+        <h2>Backlight <span class="new-badge">NEW</span></h2>
+        <p class="endpoint-info">POST /api/backlight?intensity=0-255 - Set screen brightness</p>
+        <div class="form-row">
+            <label>Intensity:</label>
+            <input type="range" id="backlightSlider" min="0" max="255" value="255" oninput="updateSliderValue()">
+            <span class="slider-value" id="backlightValue">255</span>
+            <input type="number" id="backlightInput" min="0" max="255" value="255" style="width: 80px; min-width: 80px;">
+            <button class="warning" onclick="setBacklight()">Set Backlight</button>
+        </div>
+        <div class="form-row">
+            <button class="primary" onclick="setBacklightPreset(0)">Off (0)</button>
+            <button class="primary" onclick="setBacklightPreset(64)">25%</button>
+            <button class="primary" onclick="setBacklightPreset(128)">50%</button>
+            <button class="primary" onclick="setBacklightPreset(192)">75%</button>
+            <button class="primary" onclick="setBacklightPreset(255)">Full (255)</button>
+        </div>
+        <div class="response" id="backlightResponse">Response will appear here...</div>
+    </div>
+
+    <!-- LEDs -->
+    <div class="section">
+        <h2>LED Control</h2>
+        <p class="endpoint-info">GET /api/leds - Read LED colors | POST /api/leds?color=&leds= - Set LED colors</p>
+        <div class="form-row">
+            <button class="primary" onclick="getLeds()">Get LED Colors</button>
+        </div>
+        <div class="form-row">
+            <label>Color:</label>
+            <div class="color-options">
+                <div class="color-option" style="background: #ff0000" data-color="FF0000" onclick="selectColor(this)"></div>
+                <div class="color-option" style="background: #ff8c00" data-color="FF8C00" onclick="selectColor(this)"></div>
+                <div class="color-option" style="background: #ffff00" data-color="FFFF00" onclick="selectColor(this)"></div>
+                <div class="color-option" style="background: #00ff00" data-color="00FF00" onclick="selectColor(this)"></div>
+                <div class="color-option" style="background: #0000ff" data-color="0000FF" onclick="selectColor(this)"></div>
+                <div class="color-option" style="background: #ffffff; border: 1px solid #ccc;" data-color="FFFFFF" onclick="selectColor(this)"></div>
+                <div class="color-option" style="background: #000000" data-color="000000" onclick="selectColor(this)"></div>
+            </div>
+            <input type="text" id="ledColor" value="00FF00" placeholder="Hex color (e.g., 00FF00)" style="min-width: 150px;">
+        </div>
+        <div class="form-row">
+            <label>Target:</label>
+            <div class="radio-group">
+                <label><input type="radio" name="ledTarget" value="all" checked> All</label>
+                <label><input type="radio" name="ledTarget" value="halo"> Halo</label>
+                <label><input type="radio" name="ledTarget" value="logo"> Logo</label>
+            </div>
+        </div>
+        <div class="form-row">
+            <button class="success" onclick="setLeds()">Set LED Color</button>
+        </div>
+        <div class="response" id="ledsResponse">Response will appear here...</div>
+    </div>
+
+    <!-- Settings -->
+    <div class="section">
+        <h2>Device Settings</h2>
+        <p class="endpoint-info">GET /api/settings - Read settings | PATCH /api/settings?timeZone= - Update settings</p>
+        <div class="form-row">
+            <button class="primary" onclick="getSettings()">Get Settings</button>
+        </div>
+        <div class="form-row">
+            <label>Time Zone:</label>
+            <select id="timeZone">
+                <option value="Europe/Stockholm">Europe/Stockholm</option>
+                <option value="Europe/London">Europe/London</option>
+                <option value="America/New_York">America/New_York</option>
+                <option value="America/Los_Angeles">America/Los_Angeles</option>
+                <option value="Asia/Tokyo">Asia/Tokyo</option>
+                <option value="Australia/Sydney">Australia/Sydney</option>
+                <option value="UTC">UTC</option>
+            </select>
+            <button class="success" onclick="setTimeZone()">Set Time Zone</button>
+        </div>
+        <div class="response" id="settingsResponse">Response will appear here...</div>
+    </div>
+
+    <!-- RFID -->
+    <div class="section">
+        <h2>RFID / NFC</h2>
+        <p class="endpoint-info">GET /api/rfid - Scan tag | POST /api/rfid?callbackUrl= - Scan with callback</p>
+        <div class="form-row">
+            <label>Timeout (s):</label>
+            <input type="number" id="rfidTimeout" value="30" min="2" max="60" style="width: 80px; min-width: 80px;">
+            <button class="primary" onclick="scanRfid()">Scan RFID Tag</button>
+        </div>
+        <div class="form-row">
+            <label>Callback URL:</label>
+            <input type="text" id="rfidCallback" placeholder="http://your-server:port/endpoint">
+            <button class="success" onclick="scanRfidWithCallback()">Scan with Callback</button>
+        </div>
+        <div class="response" id="rfidResponse">Response will appear here...</div>
+    </div>
+
+    <!-- Firmware -->
+    <div class="section">
+        <h2>Firmware</h2>
+        <p class="endpoint-info">GET /api/firmware - Check firmware version</p>
+        <div class="form-row">
+            <button class="primary" onclick="getFirmware()">Check Firmware Version</button>
+        </div>
+        <div class="response" id="firmwareResponse">Response will appear here...</div>
+    </div>
+
+    <!-- Logs -->
+    <div class="section">
+        <h2>Device Logs</h2>
+        <p class="endpoint-info">GET /api/logs?logType=&sizeLimit= - Retrieve device logs</p>
+        <div class="form-row">
+            <label>Log Type:</label>
+            <select id="logType">
+                <option value="all">All Logs</option>
+                <option value="application">Application Only</option>
+            </select>
+            <label>Size Limit:</label>
+            <input type="text" id="logSizeLimit" value="256k" placeholder="e.g., 256k" style="width: 100px; min-width: 100px;">
+            <button class="primary" onclick="getLogs()">Get Logs</button>
+        </div>
+        <div class="response" id="logsResponse">Response will appear here...</div>
+    </div>
+
+    <script>
+        // Clock
+        function updateClock() {
+            const now = new Date();
+            const formatted = now.toLocaleString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('clock').textContent = formatted;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Helpers
+        function getApiEndpoint() {
+            return document.getElementById('apiEndpoint').value.replace(/\/$/, '');
+        }
+
+        function setResponse(elementId, data) {
+            const el = document.getElementById(elementId);
+            if (typeof data === 'object') {
+                el.textContent = JSON.stringify(data, null, 2);
+            } else {
+                el.textContent = data;
+            }
+        }
+
+        async function apiGet(endpoint, responseId) {
+            try {
+                setResponse(responseId, 'Loading...');
+                const response = await fetch(`${getApiEndpoint()}${endpoint}`);
+                const data = await response.json();
+                setResponse(responseId, data);
+            } catch (error) {
+                setResponse(responseId, `Error: ${error.message}`);
+            }
+        }
+
+        async function apiPost(endpoint, responseId) {
+            try {
+                setResponse(responseId, 'Loading...');
+                const response = await fetch(`${getApiEndpoint()}${endpoint}`, {
+                    method: 'POST',
+                    cache: 'no-cache',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                setResponse(responseId, data);
+            } catch (error) {
+                setResponse(responseId, `Error: ${error.message}`);
+            }
+        }
+
+        // Serial
+        function getSerial() {
+            apiGet('/api/serial', 'serialResponse');
+        }
+
+        // Reboot
+        function rebootDevice() {
+            if (confirm('Are you sure you want to reboot the device?')) {
+                apiPost('/api/reboot', 'rebootResponse');
+            }
+        }
+
+        // Backlight
+        function updateSliderValue() {
+            const value = document.getElementById('backlightSlider').value;
+            document.getElementById('backlightValue').textContent = value;
+            document.getElementById('backlightInput').value = value;
+        }
+
+        function setBacklight() {
+            const intensity = document.getElementById('backlightInput').value;
+            apiPost(`/api/backlight?intensity=${intensity}`, 'backlightResponse');
+        }
+
+        function setBacklightPreset(value) {
+            document.getElementById('backlightSlider').value = value;
+            document.getElementById('backlightValue').textContent = value;
+            document.getElementById('backlightInput').value = value;
+            apiPost(`/api/backlight?intensity=${value}`, 'backlightResponse');
+        }
+
+        // LEDs
+        function getLeds() {
+            apiGet('/api/leds', 'ledsResponse');
+        }
+
+        function selectColor(el) {
+            document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('ledColor').value = el.dataset.color;
+        }
+
+        function setLeds() {
+            const color = document.getElementById('ledColor').value.replace('#', '');
+            const target = document.querySelector('input[name="ledTarget"]:checked').value;
+            apiPost(`/api/leds?color=%23${color}&leds=${target}`, 'ledsResponse');
+        }
+
+        // Settings
+        function getSettings() {
+            apiGet('/api/settings', 'settingsResponse');
+        }
+
+        function setTimeZone() {
+            const timeZone = document.getElementById('timeZone').value;
+            apiPost(`/api/settings?timeZone=${encodeURIComponent(timeZone)}`, 'settingsResponse');
+        }
+
+        // RFID
+        function scanRfid() {
+            const timeout = document.getElementById('rfidTimeout').value;
+            setResponse('rfidResponse', `Scanning for ${timeout} seconds...`);
+            apiGet(`/api/rfid?timeout=${timeout}`, 'rfidResponse');
+        }
+
+        function scanRfidWithCallback() {
+            const callbackUrl = document.getElementById('rfidCallback').value;
+            if (!callbackUrl) {
+                setResponse('rfidResponse', 'Error: Please enter a callback URL');
+                return;
+            }
+            apiPost(`/api/rfid?callbackUrl=${encodeURIComponent(callbackUrl)}`, 'rfidResponse');
+        }
+
+        // Firmware
+        function getFirmware() {
+            apiGet('/api/firmware', 'firmwareResponse');
+        }
+
+        // Logs
+        function getLogs() {
+            const logType = document.getElementById('logType').value;
+            const sizeLimit = document.getElementById('logSizeLimit').value;
+            apiGet(`/api/logs?logType=${logType}&sizeLimit=${sizeLimit}`, 'logsResponse');
+        }
+    </script>
+</body>
+</html>

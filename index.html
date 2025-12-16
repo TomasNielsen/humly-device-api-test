@@ -358,10 +358,7 @@
                 setResponse(responseId, 'Loading...');
                 const response = await fetch(`${getApiEndpoint()}${endpoint}`, {
                     method: 'POST',
-                    cache: 'no-cache',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                    cache: 'no-cache'
                 });
                 const data = await response.json();
                 setResponse(responseId, data);
